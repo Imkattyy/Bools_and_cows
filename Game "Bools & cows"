@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdbool.h>
+#define NEED_BULLS_TOTAL 4
+
+long long intPow(a, power) {
+    long long result = 1;
+    for (int i = 1; i <= power; i++) {
+        result *= a;
+    }
+
+    return result;
+}
+
+void getDigitSet(long long x, int *digitSet, const size_t nDigits) {
+    for (int i = nDigits - 1; i >= 0; i--) {
+        int digit = x % 10;
+        digitSet[i] = digit;
+        x /= 10;
+    }
+}
+
+bool isUniqueArray(const int *a, int n) {
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            if (a[i] == a[j])
+                return 0;
+
+    return 1;
+}
+
+bool isCorrectNumber(const int x){
+    const long long maxValueBound = intPow(10, NEED_BULLS_TOTAL);
+    if (x / maxValueBound)
+        return 0;
+
+    int digits[NEED_BULLS_TOTAL];
+    getDigitSet(x, digits, NEED_BULLS_TOTAL);
+
+    return isUniqueArray(digits, NEED_BULLS_TOTAL);
+};
+
+int generateStartValue() {
+    const long long maxValueBound = intPow(10, NEED_BULLS_TOTAL);
+    int generatedValue;
+    do {
+        generatedValue = rand() % maxValueBound;
+    } while (!isCorrectNumber(generatedValue));
+
+    return generatedValue;
+}
+
+void nAnimals(const int answer, const int hypothesis, int *nBulls, int *nCows) {
+    int answerDigitSet[NEED_BULLS_TOTAL];
+    getDigitSet(answer, answerDigitSet, NEED_BULLS_TOTAL);
+
+    int hypothesisDigitSet[NEED_BULLS_TOTAL];
+    getDigitSet(hypothesis, hypothesisDigitSet, NEED_BULLS_TOTAL);
+
+    *nBulls = 0;
+    *nCows = 0;
+    for (int i = 0; i < NEED_BULLS_TOTAL; i++)
+        for (int j = 0; j < NEED_BULLS_TOTAL; ++j) {
+            if (answerDigitSet[i] == hypothesisDigitSet[j]) {
+                if (i == j) {
+                    *nBulls += 1;
+                } else
+                    *nCows += 1;
+            }
+        }
+}
+
+int main() {
+    srand(time(0)); // устанавливаем зерно генерации
+
+    int answer = generateStartValue();
+    printf("generated number = %0*.d\n", NEED_BULLS_TOTAL, answer);
+
+    int hypothesis;
+    while (1) {
+        scanf("%d", &hypothesis);
+        if (!isCorrectNumber(hypothesis)) {
+            printf("Not correct number\n");
+        } else {
+            int nBulls, nCows;
+            nAnimals(answer, hypothesis, &nBulls, &nCows);
+            if (nBulls == NEED_BULLS_TOTAL) {
+                printf("win!\n");
+                break;
+            } else {
+                printf("Try again. nBulls = %d, nCows = %d\n", nBulls, nCows);
+            }
+        }
+    }
+
+    return 0;
+}
+
